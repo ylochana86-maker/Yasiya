@@ -1,0 +1,23 @@
+
+import os
+
+file_path = '/mnt/agents/output/index.html'
+file_size = os.path.getsize(file_path)
+print(f"File size: {file_size} bytes")
+
+# Check the file starts and ends correctly
+with open(file_path, 'r', encoding='utf-8') as f:
+    content = f.read()
+    
+print(f"Starts with <!DOCTYPE: {content.startswith('<!DOCTYPE')}")
+print(f"Ends with </html>: {content.strip().endswith('</html>')}")
+print(f"Contains placeOrder: {'placeOrder' in content}")
+print(f"Contains copyNumber: {'copyNumber' in content}")
+print(f"Contains 0761874688: {'0761874688' in content}")
+print(f"Contains YASIYA STORE: {'YASIYA STORE' in content}")
+print(f"Contains Sinhala text: {'ඔබ ගෙවන' in content}")
+print(f"Contains WhatsApp: {'ORDER VIA WHATSAPP' in content}")
+print(f"Contains particles: {'particles-canvas' in content}")
+print(f"Contains diamond packages: {'25' in content and '1580' in content}")
+print(f"Contains memberships: {'Weekly Lite' in content and 'Levelup Pass' in content}")
+print(f"Total lines: {content.count(chr(10))}")

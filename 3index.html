@@ -1,0 +1,398 @@
+
+part3 = '''
+    <script>
+        const diamondPackages = [
+            { amount: 25, price: 100 },
+            { amount: 50, price: 190 },
+            { amount: 100, price: 320 },
+            { amount: 200, price: 650 },
+            { amount: 310, price: 960 },
+            { amount: 520, price: 1580 },
+            { amount: 830, price: 2590 },
+            { amount: 1060, price: 3000 },
+            { amount: 1580, price: 4600 }
+        ];
+
+        const memberships = [
+            { name: 'Weekly Lite', price: 140 },
+            { name: 'Weekly', price: 560 },
+            { name: 'Monthly', price: 2850 },
+            { name: 'VIP', price: 3400 },
+            { name: 'SVIP', price: 5100 },
+            { name: 'Levelup Pass', price: 1520 }
+        ];
+
+        const EZCASH_NUMBER = '0761874688';
+        const WHATSAPP_NUMBER = '94761874688';
+
+        let selectedDiamond = null;
+        let selectedMembership = null;
+
+        const diamondSVG = `<svg class="diamond-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M32 4L8 24L32 60L56 24L32 4Z" fill="url(#dgrad)" stroke="#00d4ff" stroke-width="1.5"/>
+            <path d="M32 4L32 60" stroke="#00d4ff" stroke-width="1" opacity="0.4"/>
+            <path d="M8 24H56" stroke="#00d4ff" stroke-width="1" opacity="0.4"/>
+            <path d="M20 14L32 4L44 14" stroke="#00f0ff" stroke-width="1" opacity="0.6"/>
+            <path d="M8 24L20 14" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+            <path d="M56 24L44 14" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+            <path d="M8 24L32 60L20 14" stroke="#00d4ff" stroke-width="0.8" opacity="0.3"/>
+            <path d="M56 24L32 60L44 14" stroke="#00d4ff" stroke-width="0.8" opacity="0.3"/>
+            <defs>
+                <linearGradient id="dgrad" x1="8" y1="4" x2="56" y2="60">
+                    <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.3"/>
+                    <stop offset="50%" stop-color="#00f0ff" stop-opacity="0.15"/>
+                    <stop offset="100%" stop-color="#00d4ff" stop-opacity="0.3"/>
+                </linearGradient>
+            </defs>
+        </svg>`;
+
+        const membershipSVG = `<svg class="membership-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 4L6 14V22C6 33.6 13.6 43.8 24 46C34.4 43.8 42 33.6 42 22V14L24 4Z" fill="url(#mgrad)" stroke="#ff6b35" stroke-width="1.5"/>
+            <path d="M24 14V34" stroke="#ff6b35" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M16 22L24 14L32 22" stroke="#ff6b35" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="24" cy="28" r="3" fill="#ff6b35" opacity="0.6"/>
+            <defs>
+                <linearGradient id="mgrad" x1="6" y1="4" x2="42" y2="46">
+                    <stop offset="0%" stop-color="#ff6b35" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="#ff8c42" stop-opacity="0.15"/>
+                </linearGradient>
+            </defs>
+        </svg>`;
+
+        const checkSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+        </svg>`;
+
+        function renderDiamonds() {
+            const grid = document.getElementById('diamondGrid');
+            grid.innerHTML = diamondPackages.map((pkg, i) => `
+                <div class="product-card" data-index="${i}" data-type="diamond" onclick="selectDiamond(${i})">
+                    <div class="card-check">${checkSVG}</div>
+                    ${diamondSVG}
+                    <div class="product-amount">${pkg.amount}</div>
+                    <div class="product-price"><span class="currency">LKR</span> ${pkg.price}/=</div>
+                    <button class="select-btn">SELECT</button>
+                </div>
+            `).join('');
+        }
+
+        function renderMemberships() {
+            const grid = document.getElementById('membershipGrid');
+            grid.innerHTML = memberships.map((mem, i) => `
+                <div class="membership-card" data-index="${i}" data-type="membership" onclick="selectMembership(${i})">
+                    <div class="card-check">${checkSVG}</div>
+                    ${membershipSVG}
+                    <div class="membership-name">${mem.name}</div>
+                    <div class="membership-price">LKR ${mem.price}/=</div>
+                    <button class="select-btn">SELECT</button>
+                </div>
+            `).join('');
+        }
+
+        function selectDiamond(index) {
+            selectedDiamond = index;
+            selectedMembership = null;
+            updateSelectionUI();
+            showToast('Diamond package selected!', 'success');
+        }
+
+        function selectMembership(index) {
+            selectedMembership = index;
+            selectedDiamond = null;
+            updateSelectionUI();
+            showToast('Membership selected!', 'success');
+        }
+
+        function updateSelectionUI() {
+            document.querySelectorAll('#diamondGrid .product-card').forEach((card, i) => {
+                card.classList.toggle('selected', selectedDiamond === i);
+                const btn = card.querySelector('.select-btn');
+                btn.textContent = selectedDiamond === i ? 'SELECTED' : 'SELECT';
+            });
+
+            document.querySelectorAll('#membershipGrid .membership-card').forEach((card, i) => {
+                card.classList.toggle('selected', selectedMembership === i);
+                const btn = card.querySelector('.select-btn');
+                btn.textContent = selectedMembership === i ? 'SELECTED' : 'SELECT';
+            });
+
+            const dInfo = document.getElementById('diamondSelectionInfo');
+            const mInfo = document.getElementById('membershipSelectionInfo');
+            
+            if (selectedDiamond !== null) {
+                const pkg = diamondPackages[selectedDiamond];
+                dInfo.textContent = 'Selected: ' + pkg.amount + ' Diamonds - LKR ' + pkg.price + '/=';
+                dInfo.classList.add('has-selection');
+                mInfo.textContent = 'Diamond package selected (membership optional)';
+                mInfo.classList.remove('has-selection');
+            } else if (selectedMembership !== null) {
+                const mem = memberships[selectedMembership];
+                mInfo.textContent = 'Selected: ' + mem.name + ' - LKR ' + mem.price + '/=';
+                mInfo.classList.add('has-selection');
+                dInfo.textContent = 'Membership selected (diamonds optional)';
+                dInfo.classList.remove('has-selection');
+            } else {
+                dInfo.textContent = 'Tap a package to select it';
+                dInfo.classList.remove('has-selection');
+                mInfo.textContent = 'Tap a membership to select it (optional)';
+                mInfo.classList.remove('has-selection');
+            }
+        }
+
+        function copyNumber() {
+            navigator.clipboard.writeText(EZCASH_NUMBER).then(() => {
+                showToast('Number copied successfully!', 'success');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = EZCASH_NUMBER;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('Number copied successfully!', 'success');
+            });
+        }
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+            
+            toastMessage.textContent = message;
+            toast.className = 'toast show ' + type;
+            
+            if (type === 'success') {
+                toastIcon.innerHTML = '<path d="M20 6L9 17l-5-5"/>';
+                toastIcon.setAttribute('stroke', 'var(--success)');
+            } else {
+                toastIcon.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+                toastIcon.setAttribute('stroke', 'var(--error)');
+            }
+            
+            clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function placeOrder() {
+            const playerId = document.getElementById('playerIdInput').value.trim();
+            const rnNumber = document.getElementById('rnInput').value.trim();
+            const playerIdInput = document.getElementById('playerIdInput');
+            const rnInput = document.getElementById('rnInput');
+
+            playerIdInput.classList.remove('error');
+            rnInput.classList.remove('error');
+
+            let hasError = false;
+
+            if (!playerId) {
+                playerIdInput.classList.add('error');
+                showToast('Please enter your Player ID', 'error');
+                hasError = true;
+            }
+
+            if (selectedDiamond === null && selectedMembership === null) {
+                showToast('Please select a diamond package or membership', 'error');
+                hasError = true;
+            }
+
+            if (!rnNumber) {
+                rnInput.classList.add('error');
+                showToast('Please enter your RN Number', 'error');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            let itemName, itemPrice;
+            if (selectedDiamond !== null) {
+                const pkg = diamondPackages[selectedDiamond];
+                itemName = pkg.amount + ' Diamonds';
+                itemPrice = 'LKR ' + pkg.price + '/=';
+            } else {
+                const mem = memberships[selectedMembership];
+                itemName = mem.name;
+                itemPrice = 'LKR ' + mem.price + '/=';
+            }
+
+            const summaryContent = document.getElementById('summaryContent');
+            summaryContent.innerHTML = `
+                <div class="summary-item">
+                    <span class="summary-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        Player ID
+                    </span>
+                    <span class="summary-value highlight">${playerId}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--diamond)" stroke-width="2">
+                            <path d="M12 2L2 9l10 13 10-13-10-7z"/>
+                        </svg>
+                        Package
+                    </span>
+                    <span class="summary-value">${itemName}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                        </svg>
+                        Price
+                    </span>
+                    <span class="summary-value price">${itemPrice}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        RN Number
+                    </span>
+                    <span class="summary-value highlight">${rnNumber}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                            <line x1="1" y1="10" x2="23" y2="10"/>
+                        </svg>
+                        eZ Cash
+                    </span>
+                    <span class="summary-value">${EZCASH_NUMBER}</span>
+                </div>
+            `;
+
+            const message = encodeURIComponent(
+                '*YASIYA STORE - New Order*' + '\\n' +
+                '------------------------' + '\\n' +
+                '*Player ID:* ' + playerId + '\\n' +
+                '*Package:* ' + itemName + '\\n' +
+                '*Price:* ' + itemPrice + '\\n' +
+                '*RN Number:* ' + rnNumber + '\\n' +
+                '*eZ Cash Number:* ' + EZCASH_NUMBER + '\\n' +
+                '------------------------' + '\\n' +
+                'Please confirm my order!'
+            );
+
+            document.getElementById('modalWhatsappBtn').onclick = function() {
+                window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + message, '_blank');
+            };
+
+            document.getElementById('modalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(event) {
+            if (event && event.target !== document.getElementById('modalOverlay')) return;
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Active nav link
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.nav-links a');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Diamond Particles
+        (function() {
+            const canvas = document.getElementById('particles-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let animationId;
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 3 + 1;
+                    this.speedX = (Math.random() - 0.5) * 0.5;
+                    this.speedY = (Math.random() - 0.5) * 0.5;
+                    this.opacity = Math.random() * 0.5 + 0.1;
+                    this.color = Math.random() > 0.5 ? '0, 212, 255' : '0, 240, 255';
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                        this.reset();
+                    }
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(' + this.color + ',' + this.opacity + ')';
+                    ctx.fill();
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(' + this.color + ',0.3)';
+                }
+            }
+
+            for (let i = 0; i < 50; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                animationId = requestAnimationFrame(animate);
+            }
+            animate();
+        })();
+
+        // Initialize
+        renderDiamonds();
+        renderMemberships();
+    </script>
+</body>
+</html>
+'''
+
+with open('/mnt/agents/output/index.html', 'a', encoding='utf-8') as f:
+    f.write(part3)
+print("Part 3 written successfully")
